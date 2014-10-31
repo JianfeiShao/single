@@ -36,7 +36,7 @@ public class UserLogin {
 	 * @return
 	 * @throws Exception
 	 */
-	public String getUser(String cookies,String randCode) throws Exception{
+	public String getUser(String user,String pwd,String cookies,String randCode) throws Exception{
 		CloseableHttpClient httpClient = HttpClientUtil
 				.createSSLClientDefault();
 		HttpPost postLoginAysnSuggest = new HttpPost(url_loginAysnSuggest);

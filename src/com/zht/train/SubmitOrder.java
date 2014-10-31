@@ -34,12 +34,12 @@ public class SubmitOrder {
 	/**
 	 *  验证车票是否还存在？？？
 	 */
-	public void submitOrderRequest(String cookie) throws Exception{
+	public void submitOrderRequest(String cookie,String secretStr) throws Exception{
 				String url_submitOrderRequest = "https://kyfw.12306.cn/otn/leftTicket/submitOrderRequest";
 				CloseableHttpClient httpClientCheckOrder = HttpClientUtil.createSSLClientDefault();
 				HttpPost postOrder = new HttpPost(url_submitOrderRequest);
 				postOrder.setHeader("Cookie",cookie);
-				String secretStr="MjAxNC0xMC0zMSMwMCNHMTY1IzEyOjQ1IzA4OjQ1IzI0MDAwMEcxNjUwMCNWTlAjWEtTIzIxOjMwI+WMl+S6rOWNlyPljqbpl6jljJcjMDEjMjUjTzA4Mjk1MDIyOE0xMjg0MDAwNzY5MjU4MTUwMDAwI1AzIzE0MTQ2NzU5NTk5MTAjRkM2M0JEQUFBRTVEMDY0Q0VGQjk0QUZDNkJDQzBGMkRFQTNBRTQxMDE5MDZFODA2NkIxQkI4QkQ=";
+//				String secretStr="MjAxNC0xMC0zMSMwMCNHMTY1IzEyOjQ1IzA4OjQ1IzI0MDAwMEcxNjUwMCNWTlAjWEtTIzIxOjMwI+WMl+S6rOWNlyPljqbpl6jljJcjMDEjMjUjTzA4Mjk1MDIyOE0xMjg0MDAwNzY5MjU4MTUwMDAwI1AzIzE0MTQ2NzU5NTk5MTAjRkM2M0JEQUFBRTVEMDY0Q0VGQjk0QUZDNkJDQzBGMkRFQTNBRTQxMDE5MDZFODA2NkIxQkI4QkQ=";
 				List<BasicNameValuePair> nvps = new ArrayList<BasicNameValuePair>();
 				nvps.add(new BasicNameValuePair("secretStr", secretStr));
 				nvps.add(new BasicNameValuePair("train_date", "2014-10-30"));
@@ -57,8 +57,8 @@ public class SubmitOrder {
 	 *  验证成功后，这里有3个 令牌
 	 * @throws Exception
 	 */
-	public void initDc(String cookie)throws Exception{
-		Map map = new HashMap();
+	public Map<String,String> initDc(String cookie)throws Exception{
+		Map<String,String> map = new HashMap<String,String>();
 		String url_initDc = "https://kyfw.12306.cn/otn/confirmPassenger/initDc";
 		CloseableHttpClient httpClientInit = HttpClientUtil.createSSLClientDefault();
 		HttpPost postInit = new HttpPost(url_initDc);
@@ -90,17 +90,19 @@ public class SubmitOrder {
 		String leftTicketStr = sb.toString().substring(startIndex1, endIndex1);
 		String[] key1 = leftTicketStr.split("':'");
 		map.put(key1[0], key1[1]);
-	
+		
 		//key3 globalRepeatSubmitToken
 		int startIndex2 = sb.toString().indexOf("globalRepeatSubmitToken = '");
 		int endIndex2 = sb.toString().indexOf("';",startIndex2);
 		String globalRepeatSubmitToken = sb.toString().substring(startIndex2, endIndex2);
-		map.put("globalRepeatSubmitToken", globalRepeatSubmitToken);
+		String[] tokens = globalRepeatSubmitToken.split("= '"); 
+		map.put(tokens[0],tokens[1]);
 		
 		System.out.println(map.size());
 		System.out.println("key_check_isChange--->"+map.get("key_check_isChange"));
 		System.out.println("leftTicketStr---->"+map.get("leftTicketStr"));
 		System.out.println("globalRepeatSubmitToken---->"+map.get("globalRepeatSubmitToken"));
+		return map;
 	}
 	/**
 	 * 获取乘客，里面随机一个token
@@ -206,7 +208,7 @@ public class SubmitOrder {
 	 * @param REPEAT_SUBMIT_TOKEN
 	 * @throws Exception
 	 */
-	public void confirmSingleForQueue(String cookie,String REPEAT_SUBMIT_TOKEN,String key_check_isChange,String leftTicketStr) throws Exception{
+	public void confirmSingleForQueue(String cookie,String REPEAT_SUBMIT_TOKEN,String key_check_isChange,String leftTicketStr,String randCode) throws Exception{
 				String url_confirmSingleForQueue = "https://kyfw.12306.cn/otn/confirmPassenger/confirmSingleForQueue";
 				CloseableHttpClient httpconfirmSingleForQueue = HttpClientUtil.createSSLClientDefault();
 				HttpPost post = new HttpPost(url_confirmSingleForQueue);
@@ -214,7 +216,7 @@ public class SubmitOrder {
 				List<BasicNameValuePair> nvps = new ArrayList<BasicNameValuePair>();
 				nvps.add(new BasicNameValuePair("passengerTicketStr", "O,0,1,邵建飞,1,412801199202062656,18801064475,N"));
 				nvps.add(new BasicNameValuePair("oldPassengerStr", "邵建飞,1,412801199202062656,1_"));
-				nvps.add(new BasicNameValuePair("randCode", "6scu"));//验证码
+				nvps.add(new BasicNameValuePair("randCode", randCode));//验证码
 				nvps.add(new BasicNameValuePair("purpose_codes", "00"));
 				nvps.add(new BasicNameValuePair("key_check_isChange",key_check_isChange));
 				nvps.add(new BasicNameValuePair("leftTicketStr", leftTicketStr));//getQueueCount 里面有个需要的结果

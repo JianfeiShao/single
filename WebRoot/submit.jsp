@@ -10,7 +10,8 @@
 <html>
 <head>
 
-<title>My JSP 'index.jsp' starting page</title>
+<title>My JSP 'submit.jsp' starting page</title>
+
 <meta http-equiv="pragma" content="no-cache">
 <meta http-equiv="cache-control" content="no-cache">
 <meta http-equiv="expires" content="0">
@@ -19,16 +20,14 @@
 <!--
 	<link rel="stylesheet" type="text/css" href="styles.css">
 	-->
+
 </head>
 
 <body>
-	<form action="/single/UserLogin" method="post">
-		账号：<input name="user"><br/> 
-		密码：<input name="pwd"> <br/>
-		验证码：<input name="randcode"><br/>
-		<img alt="" src="data:image/png;base64,${randCode }">
-		<input	type="submit" value="登陆">
-	</form>
-	<br>
+<form action="/single/SubmitServlet" method="post">
+<input type="text" name="codeSubmit">
+	<img alt="" src="data:image/png;base64,${randCodeSubmit }" >
+	<input type="submit" value="提交">
+</form>
 </body>
 </html>
