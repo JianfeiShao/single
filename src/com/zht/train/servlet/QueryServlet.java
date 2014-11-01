@@ -66,7 +66,8 @@ public class QueryServlet extends HttpServlet {
 		ObjectMapper mapper = new ObjectMapper();
 		String cookie = (String) request.getSession().getAttribute("cookie");
 		try {
-			String queryRestul = query.query("2014-11-01", "BJP", "XMS");
+			String queryRestul = query.query("2014-11-02", "BJP", "XMS");
+			System.out.println("-------->"+queryRestul);
 			Tickets tickets = mapper.readValue(queryRestul, Tickets.class);
 			List<TicketInfo> ticketInfoList = tickets.getData();
 			for (TicketInfo ticketInfo : ticketInfoList) {
@@ -77,7 +78,9 @@ public class QueryServlet extends HttpServlet {
 					};
 				}
 			}
-//			submitOrder.submitOrderRequest(cookie,secretSer);
+			
+			submitOrder.submitOrderRequest(cookie,secretSer);
+			
 			Map<String,String> map = submitOrder.initDc(cookie);
 			
 			request.getSession().setAttribute("map", map);
@@ -103,20 +106,6 @@ public class QueryServlet extends HttpServlet {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
-		// response.setContentType("text/html");
-		// PrintWriter out = response.getWriter();
-		// out.println("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">");
-		// out.println("<HTML>");
-		// out.println("  <HEAD><TITLE>A Servlet</TITLE></HEAD>");
-		// out.println("  <BODY>");
-		// out.print("    This is ");
-		// out.print(this.getClass());
-		// out.println(", using the GET method");
-		// out.println("  </BODY>");
-		// out.println("</HTML>");
-		// out.flush();
-		// out.close();
 	}
 
 	/**

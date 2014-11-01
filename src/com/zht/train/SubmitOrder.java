@@ -1,6 +1,7 @@
 package com.zht.train;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -10,6 +11,8 @@ import java.util.Map;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.ParseException;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -57,25 +60,53 @@ public class SubmitOrder {
 	 *  验证成功后，这里有3个 令牌
 	 * @throws Exception
 	 */
-	public Map<String,String> initDc(String cookie)throws Exception{
+	public Map<String,String> initDc(String cookie){
 		Map<String,String> map = new HashMap<String,String>();
 		String url_initDc = "https://kyfw.12306.cn/otn/confirmPassenger/initDc";
 		CloseableHttpClient httpClientInit = HttpClientUtil.createSSLClientDefault();
 		HttpPost postInit = new HttpPost(url_initDc);
 		postInit.setHeader("Cookie",cookie);
-		HttpResponse response2 = httpClientInit.execute(postInit);
-//				System.out.println(EntityUtils.toString(response2.getEntity()));
 		
-		HttpEntity entity = response2.getEntity();
-		InputStream inputStream = entity.getContent();
-		BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-		String lines = null;
-		StringBuffer sb = new StringBuffer();
-		while((lines = reader.readLine()) != null){
-			sb.append(lines+"\n");
+		HttpResponse response2 = null;
+		try {
+			response2 = httpClientInit.execute(postInit);
+		} catch (ClientProtocolException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
-		inputStream.close();
-		reader.close();
+		
+//		try {
+//			System.out.println(EntityUtils.toString(response2.getEntity()));
+//		} catch (ParseException e) {
+//			e.printStackTrace();
+//		} catch (IOException e) { 
+//			e.printStackTrace();
+//		}
+		HttpEntity entity = response2.getEntity();
+//		try {
+//			postInit.clone();
+//		} catch (CloneNotSupportedException e1) {
+//			e1.printStackTrace();
+//		}
+		String sb = null;
+		try {
+			sb = EntityUtils.toString(entity);
+		} catch (ParseException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+//		HttpEntity entity = response2.getEntity();
+//		InputStream inputStream = entity.getContent();
+//		BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+//		String lines = null;
+//		StringBuffer sb = new StringBuffer();
+//		while((lines = reader.readLine()) != null){
+//			sb.append(lines+"\n");
+//		}
+//		inputStream.close();
+//		reader.close();
 		
 		//key1 key_check_isChange
 		int startIndex = sb.toString().lastIndexOf("key_check_isChange':'");
@@ -96,7 +127,9 @@ public class SubmitOrder {
 		int endIndex2 = sb.toString().indexOf("';",startIndex2);
 		String globalRepeatSubmitToken = sb.toString().substring(startIndex2, endIndex2);
 		String[] tokens = globalRepeatSubmitToken.split("= '"); 
-		map.put(tokens[0],tokens[1]);
+		System.out.println("---->"+tokens[0]);
+		System.out.println("---->"+tokens[1]);
+		map.put(tokens[0].trim(),tokens[1].trim());
 		
 		System.out.println(map.size());
 		System.out.println("key_check_isChange--->"+map.get("key_check_isChange"));
