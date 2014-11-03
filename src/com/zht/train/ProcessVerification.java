@@ -23,7 +23,7 @@ public class ProcessVerification {
 	}
 	@Test
 	public void query() throws Exception{
-		String chepiao = query.query("2014-11-01", "BJP", "XMS");//查询票
+		String chepiao = query.query("2014-11-04", "BJP", "XMS");//查询票
 		System.out.println(chepiao);
 		Tickets tickets = mapper.readValue(chepiao, Tickets.class);
 		List<TicketInfo> ticketInfoList = tickets.getData();
@@ -33,21 +33,24 @@ public class ProcessVerification {
 			Map<String, String> map = ticketInfo.getQueryLeftNewDTO();
 //				URLEncoder.encode(s, enc);
 				System.out.println(URLDecoder.decode(ticketInfo.getSecretStr(),"utf-8"));
+				System.out.println(map.get("start_station_name"));
+				System.out.println(map.get("end_station_name"));
+				System.out.println(map.get("seat_types"));
 //				System.out.println(ticketInfo.getSecretStr());
 //			if (map.get("station_train_code").equals("G421")) {
-				System.out.println("软卧" + map.get("rw_num"));
-				System.out.println("硬卧" + map.get("yw_num"));
-				System.out.println("软座" + map.get("rz_num"));
-				System.out.println("硬座" + map.get("yz_num"));
-				System.out.println("无座" + map.get("wz_num"));
-				System.out.println("其它" + map.get("qt_num"));
-				System.out.println("商务座" + map.get("swz_num"));
-				System.out.println("特等座" + map.get("tz_num"));
-				System.out.println("高级软卧" + map.get("gr_num"));
-				System.out.println("duo" + map.get("yb_num"));
-				System.out.println("一等座" + map.get("zy_num"));
-				System.out.println("二等座" + map.get("ze_num"));
-				System.out.println("duo" + map.get("gg_num"));
+//				System.out.println("软卧" + map.get("rw_num"));
+//				System.out.println("硬卧" + map.get("yw_num"));
+//				System.out.println("软座" + map.get("rz_num"));
+//				System.out.println("硬座" + map.get("yz_num"));
+//				System.out.println("无座" + map.get("wz_num"));
+//				System.out.println("其它" + map.get("qt_num"));
+//				System.out.println("商务座" + map.get("swz_num"));
+//				System.out.println("特等座" + map.get("tz_num"));
+//				System.out.println("高级软卧" + map.get("gr_num"));
+//				System.out.println("duo" + map.get("yb_num"));
+//				System.out.println("一等座" + map.get("zy_num"));
+//				System.out.println("二等座" + map.get("ze_num"));
+//				System.out.println("duo" + map.get("gg_num"));
 //				break;
 //			}
 		}
@@ -58,11 +61,11 @@ public class ProcessVerification {
 	}
 	@Test
 	public void submitOrderRequest()throws Exception{
-		submitOrder.submitOrderRequest(cookie,"");
+//		query.submitOrderRequest(cookie,"");
 	}
 	@Test
 	public void initDc()throws Exception{
-		submitOrder.initDc(cookie);
+		query.initDc(cookie);
 	}
 	@Test
 	public void orderGetPassCodeNew(){

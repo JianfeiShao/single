@@ -33,16 +33,6 @@ public class SubmitServlet extends HttpServlet {
 		// Put your code here
 	}
 
-	/**
-	 * The doGet method of the servlet. <br>
-	 *
-	 * This method is called when a form has its tag value method equals to get.
-	 * 
-	 * @param request the request send by the client to the server
-	 * @param response the response send by the server to the client
-	 * @throws ServletException if an error occurred
-	 * @throws IOException if an error occurred
-	 */
 	public void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 
@@ -61,33 +51,36 @@ public class SubmitServlet extends HttpServlet {
 		out.close();
 	}
 
-	/**
-	 * The doPost method of the servlet. <br>
-	 *
-	 * This method is called when a form has its tag value method equals to post.
-	 * 
-	 * @param request the request send by the client to the server
-	 * @param response the response send by the server to the client
-	 * @throws ServletException if an error occurred
-	 * @throws IOException if an error occurred
-	 */
 	public void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		SubmitOrder submitOrder = new SubmitOrder();
 		
-		String randCode = request.getParameter("codeSubmit");
+		String verificationCode = request.getParameter("codeSubmit");
 		
 		String cookie = (String)request.getSession().getAttribute("cookie");
 		
-		Map<String,String> map = (Map<String, String>) request.getSession().getAttribute("map");
+		Map<String,String> tokenMap = (Map<String, String>) request.getSession().getAttribute("tokenMap");
 		try {
-			submitOrder.checkRandCodeAnsyn(cookie, randCode, map.get("globalRepeatSubmitToken"));
-//			submitOrder.checkUser(cookie);
-			submitOrder.checkOrderInfo(cookie, randCode, map.get("globalRepeatSubmitToken"));
-			submitOrder.getQueueCount(cookie, map.get("globalRepeatSubmitToken"), map.get("leftTicketStr"));
-			submitOrder.confirmSingleForQueue(cookie, map.get("globalRepeatSubmitToken"), 
-					map.get("key_check_isChange"), 
-					map.get("leftTicketStr"), randCode);
+			//检测验证是否正确，应该在服务端标记了这个请求
+			submitOrder.checkRandCodeAnsyn(cookie, 
+					verificationCode, 
+					tokenMap.get("globalRepeatSubmitToken"));
+			//验证订单，这一步可以去除？
+			submitOrder.checkOrderInfo(cookie, 
+					verificationCode, 
+					tokenMap.get("globalRepeatSubmitToken"));
+			//获取余票信息，是否可以去除？
+			submitOrder.getQueueCount(cookie, 
+					tokenMap.get("globalRepeatSubmitToken"), 
+					tokenMap.get("leftTicketStr"));
+			//提交订单
+			String submitResult = submitOrder.confirmSingleForQueue(cookie, 
+					tokenMap.get("globalRepeatSubmitToken"), 
+					tokenMap.get("key_check_isChange"), 
+					tokenMap.get("leftTicketStr"), 
+					verificationCode);
+			request.getSession().setAttribute("message", submitResult);
+			response.sendRedirect("/single/message.jsp");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

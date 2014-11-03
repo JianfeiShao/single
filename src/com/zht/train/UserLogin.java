@@ -22,7 +22,7 @@ public class UserLogin {
 	 * 登陆验证码
 	 * @return
 	 */
-	public HttpResponse getPassCodeNew()throws Exception{
+	public HttpResponse getLoginPassCodeNew()throws Exception{
 		CloseableHttpClient httpClient = HttpClientUtil.createSSLClientDefault();
 		HttpGet getPassCodeNew = new HttpGet(url_getPassCodeNew);
 		return httpClient.execute(getPassCodeNew);
@@ -36,25 +36,27 @@ public class UserLogin {
 	 * @return
 	 * @throws Exception
 	 */
-	public String getUser(String user,String pwd,String cookies,String randCode) throws Exception{
-		CloseableHttpClient httpClient = HttpClientUtil
-				.createSSLClientDefault();
+	public String getUser(String user,String pwd,
+			String cookies,String randCode) throws Exception{
+		System.out.println("正在登陆！！！");
+		CloseableHttpClient httpClient = 
+				HttpClientUtil.createSSLClientDefault();
 		HttpPost postLoginAysnSuggest = new HttpPost(url_loginAysnSuggest);
 		
 		postLoginAysnSuggest.setHeader("Cookie", cookies);
 		List<BasicNameValuePair> nvps = new ArrayList<BasicNameValuePair>();
-		nvps.add(new BasicNameValuePair("loginUserDTO.user_name", "s940053457"));//"wangping1125"));
-		nvps.add(new BasicNameValuePair("userDTO.password", "love1457"));//"wangping1125"));
+		nvps.add(new BasicNameValuePair("loginUserDTO.user_name", user));//"s940053457"));//"wangping1125"));
+		nvps.add(new BasicNameValuePair("userDTO.password", pwd));//"love1457"));//"wangping1125"));
 		nvps.add(new BasicNameValuePair("randCode", randCode));// 这里是验证码
 		postLoginAysnSuggest.setEntity(new UrlEncodedFormEntity(nvps, "UTF-8"));
 		
 		HttpPost postUserLogin = new HttpPost(url_userLogin);
 		postUserLogin.setHeader("Cookie", cookies);
 		
-		HttpResponse result = httpClient.execute(postLoginAysnSuggest);
-		HttpResponse result1 = httpClient.execute(postUserLogin);//这一步必须有，这个才是正式登陆
-		EntityUtils.toString(result1.getEntity());
-		return EntityUtils.toString(result.getEntity());
+		HttpResponse responseEntitySuggest = httpClient.execute(postLoginAysnSuggest);
+		HttpResponse responseEntityLogin = httpClient.execute(postUserLogin);//这一步必须有，这个才是正式登陆
+		EntityUtils.toString(responseEntitySuggest.getEntity());
+		return EntityUtils.toString(responseEntityLogin.getEntity());
 	}
 	
 	/**

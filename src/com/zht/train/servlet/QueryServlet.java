@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.net.URLDecoder;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -21,6 +22,8 @@ import com.zht.train.Query;
 import com.zht.train.SubmitOrder;
 import com.zht.train.entity.TicketInfo;
 import com.zht.train.entity.Tickets;
+import com.zht.train.util.HttpRequestTool;
+import com.zht.train.util.HttpResponseTool;
 
 public class QueryServlet extends HttpServlet {
 
@@ -44,85 +47,66 @@ public class QueryServlet extends HttpServlet {
 		// Put your code here
 	}
 
-	/**
-	 * The doGet method of the servlet. <br>
-	 * 
-	 * This method is called when a form has its tag value method equals to get.
-	 * 
-	 * @param request
-	 *            the request send by the client to the server
-	 * @param response
-	 *            the response send by the server to the client
-	 * @throws ServletException
-	 *             if an error occurred
-	 * @throws IOException
-	 *             if an error occurred
-	 */
-	String secretSer = null;
 	public void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
+		String secretSer = null;
 		Query query = new Query();
-		SubmitOrder submitOrder = new SubmitOrder();
 		ObjectMapper mapper = new ObjectMapper();
 		String cookie = (String) request.getSession().getAttribute("cookie");
+		Map<String,String> getParamMap = 
+				HttpRequestTool.getMoreParameters(request, "trainDate","fromStation","toStation","startTime");
+		Map<String,String> setParamMap = new HashMap<String, String>();
+		Map<String,String> getQueryLeftNewDTOMap = new HashMap<String, String>();
 		try {
-			String queryRestul = query.query("2014-11-02", "BJP", "XMS");
-			System.out.println("-------->"+queryRestul);
-			Tickets tickets = mapper.readValue(queryRestul, Tickets.class);
-			List<TicketInfo> ticketInfoList = tickets.getData();
-			for (TicketInfo ticketInfo : ticketInfoList) {
-				Map<String, String> mapParam = ticketInfo.getQueryLeftNewDTO();
-				if(mapParam.get("canWebBuy").toUpperCase().equals("Y")){
-					if(mapParam.get("start_time").equals("08:45")){
-						secretSer = URLDecoder.decode(ticketInfo.getSecretStr(),"utf-8");
-					};
+			boolean existsQuery = true;
+			while(existsQuery){
+				//在这里轮询车票
+				String queryRestul = query.query(getParamMap.get("trainDate"), getParamMap.get("fromStation"), getParamMap.get("toStation"));
+				System.out.println(queryRestul);
+				
+				Tickets tickets = mapper.readValue(queryRestul, Tickets.class);
+				List<TicketInfo> ticketInfoList = tickets.getData();
+				if(ticketInfoList.size()>0){
+					for (TicketInfo ticketInfo : ticketInfoList) {
+						Map<String, String> mapParam = ticketInfo.getQueryLeftNewDTO();
+						if(mapParam.get("canWebBuy").toUpperCase().equals("Y")){
+							//有票的情况下，进行条件筛选
+							if(mapParam.get("start_time").equals(getParamMap.get("startTime"))){
+								secretSer = URLDecoder.decode(ticketInfo.getSecretStr(),"utf-8");
+								getQueryLeftNewDTOMap.putAll(mapParam);
+								existsQuery = false;
+							};
+						}
+					}
 				}
 			}
-			
-			submitOrder.submitOrderRequest(cookie,secretSer);
-			
-			Map<String,String> map = submitOrder.initDc(cookie);
-			
-			request.getSession().setAttribute("map", map);
-			
-			HttpResponse requestSubmit = submitOrder.orderGetPassCodeNew(cookie);
-			
-//			//返回提交验证码
-			InputStream is = requestSubmit.getEntity().getContent();
-			int count = 0;
-			while (count == 0) {
-				count = (int) requestSubmit.getEntity().getContentLength();
+			if(secretSer != null){
+				setParamMap.put("cookie", cookie);
+				setParamMap.put("secretStr", secretSer);
+				setParamMap.put("train_date", getParamMap.get("trainDate"));
+				setParamMap.put("back_train_date", getParamMap.get("trainDate"));
+//				setParamMap.put("tour_flag", value);
+//				setParamMap.put("purpose_codes", value);
+				setParamMap.put("query_from_station_name", getQueryLeftNewDTOMap.get("start_station_name"));
+				setParamMap.put("query_to_station_name", getQueryLeftNewDTOMap.get("end_station_name"));
+				
+				query.submitOrderRequest(cookie,secretSer,setParamMap);
+				//的到三个令牌，（可以优化）
+				Map<String,String> tokenMap = query.initDc(cookie);
+				request.getSession().setAttribute("tokenMap", tokenMap);
+				HttpResponse responseEntity = query.getOrderPassCodeNew(cookie);
+				
+				//获取响应BASE64
+				String BASE64String = HttpResponseTool.getEntityBASE64Encoder(responseEntity);
+				request.getSession().setAttribute("randCodeSubmit", BASE64String);
+				
+				response.sendRedirect("/single/submit.jsp");
 			}
-			byte[] data = new byte[count];
-			int readCount = 0;
-			while (readCount < count) {
-				readCount += is.read(data, readCount, count - readCount);
-			}
-			is.read(data);
-			is.close();
-			BASE64Encoder encoder = new BASE64Encoder();
-			request.getSession().setAttribute("randCodeSubmit", encoder.encode(data));
-			response.sendRedirect("/single/submit.jsp");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
-	/**
-	 * The doPost method of the servlet. <br>
-	 * 
-	 * This method is called when a form has its tag value method equals to
-	 * post.
-	 * 
-	 * @param request
-	 *            the request send by the client to the server
-	 * @param response
-	 *            the response send by the server to the client
-	 * @throws ServletException
-	 *             if an error occurred
-	 * @throws IOException
-	 *             if an error occurred
-	 */
 	public void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 

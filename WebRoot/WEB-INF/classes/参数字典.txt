@@ -1,0 +1,20 @@
+
+
+
+leftTicketStr》验证是否可以订购
+
+orderRequest.train_date：日期 
+orderRequest.from_station_telecode/orderRequest.to_station_telecode： 车站代码(url(Get): https://dynamic.12306.cn/otsweb/js/common/station_name.js) 
+orderRequest.train_no：车次 
+trainPassType/trainClass: 车次类型 
+includeStudent： 学生票标识 
+seatTypeAndNum：貌似有牛人得出这里跟下铺有关系？对我来说未知 
+orderRequest.start_time_str：起止时间
+
+
+seat_types 类型
+M 一等座
+O 二等座
+1 无座 硬座
+6 高等做
+4 软卧

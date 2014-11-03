@@ -55,7 +55,7 @@ public class TestSingle {
 	
 	@Test
 	public void login() throws Exception {
-		HttpResponse response = userLogin.getPassCodeNew();
+		HttpResponse response = userLogin.getLoginPassCodeNew();
 		Header[] headers = response.getHeaders("Set-Cookie");
 		for (int i = 0; i < headers.length; i++) {
 			Header header = headers[i];
